@@ -1834,7 +1834,7 @@ PeerImp::getLedger (std::shared_ptr<protocol::TMGetLedger> const& m)
     protocol::TMGetLedger& packet = *m;
     std::shared_ptr<SHAMap> map;
     protocol::TMLedgerData reply;
-    bool fatLeaves = true, fatRoot = false;
+    bool fatLeaves = true;
 
     if (packet.has_requestcookie ())
         reply.set_requestcookie (packet.requestcookie ());
@@ -1892,7 +1892,6 @@ PeerImp::getLedger (std::shared_ptr<protocol::TMGetLedger> const& m)
         reply.set_ledgerhash (txHash.begin (), txHash.size ());
         reply.set_type (protocol::liTS_CANDIDATE);
         fatLeaves = false; // We'll already have most transactions
-        fatRoot = true; // Save a pass
     }
     else
     {
@@ -2001,13 +2000,13 @@ PeerImp::getLedger (std::shared_ptr<protocol::TMGetLedger> const& m)
             return;
         }
 
-            if (!packet.has_ledgerseq() && (ledger->getLedgerSeq() <
-                getApp().getLedgerMaster().getEarliestFetch()))
-            {
-                if (p_journal_.debug) p_journal_.debug <<
-                    "GetLedger: Early ledger request";
-                return;
-            }
+        if (!packet.has_ledgerseq() && (ledger->getLedgerSeq() <
+            getApp().getLedgerMaster().getEarliestFetch()))
+        {
+            if (p_journal_.debug) p_journal_.debug <<
+                "GetLedger: Early ledger request";
+            return;
+        }
 
         // Fill out the reply
         uint256 lHash = ledger->getHash ();
